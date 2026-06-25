@@ -30,3 +30,26 @@
 *.exe
 *.out
 *.app
+
+# Build output
+/build/
+/build-web/
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+# Emscripten web build artifacts
+*.wasm
+*.data
+
+# macOS
+.DS_Store
+
+# Original Windows/SFML source kept only as a porting reference
+/_original_Main_Game.cpp
+
+# M1 working snapshot kept locally as a safety reference during the OOP refactor
+/_m1_main.cpp.reference
