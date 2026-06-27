@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dungeon of the Skeletons</title>
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: #0b0b12; color: #cfcfe6;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: flex-start; min-height: 100vh;
+    }
+    h1 { font-weight: 600; margin: 20px 0 4px; letter-spacing: .5px; }
+    p  { margin: 0 0 14px; opacity: .65; font-size: 14px; }
+    #canvas {
+      background: #000; border: 1px solid #2a2a3a; border-radius: 4px;
+      max-width: 100%; image-rendering: pixelated; outline: none;
+    }
+    #status { margin-top: 10px; min-height: 18px; opacity: .6; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>Dungeon of the Skeletons</h1>
+  <p>Click the game, then: <b>Start</b> → <b>Space</b> &nbsp;·&nbsp; ← → move &nbsp;·&nbsp; ↑ jump &nbsp;·&nbsp; ↓ crouch</p>
+  <canvas id="canvas" width="1280" height="720" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+  <div id="status">Loading…</div>
+  <script>
+    var statusEl = document.getElementById('status');
+    var Module = {
+      canvas: document.getElementById('canvas'),
+      print:    function (t) { console.log(t); },
+      printErr: function (t) { console.error(t); },
+      setStatus: function (t) { if (statusEl) statusEl.textContent = t; },
+      monitorRunDependencies: function () {}
+    };
+    Module.setStatus('Loading…');
+    window.onerror = function () { Module.setStatus('Something went wrong — see the console.'); };
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>

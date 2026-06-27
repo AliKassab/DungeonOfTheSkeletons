@@ -4,6 +4,10 @@
 #include <string>
 #include <fstream>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 namespace {
 // Story slide filenames, in the order the original referenced s1..s28.
 const char* kStoryFiles[28] = {
@@ -60,20 +64,20 @@ void Game::setup() {
     highLabel.setCharacterSize(25); highLabel.setPosition(130, 5); highLabel.setScale(0.9, 0.9);
 
     // audio
-    eat.loadFromFile("coineat.wav");                              eat.setVolume(5);
-    ost.loadFromFile("Medieval_Music_-_Haunted_Ferryman.wav");   ost.setVolume(50);
-    telep.loadFromFile("TELEP.wav");                             telep.setVolume(50);
-    fireBall.loadFromFile("fireball.wav");                       fireBall.setVolume(70);
-    drink.loadFromFile("drink.wav");                             drink.setVolume(100);
-    spiderS.loadFromFile("spider.wav");                          spiderS.setVolume(100);
-    voice1.loadFromFile("First.wav");                            voice1.setVolume(100);
-    voice2.loadFromFile("Second_1.wav");                         voice2.setVolume(100);
-    voice3.loadFromFile("Third.wav");                            voice3.setVolume(100);
-    back1.loadFromFile("yt1s.com_-_Kingdom_Hearts_OST_Menu_Theme.wav");   back1.setVolume(100);
-    back2.loadFromFile("yt1s.com_-_Kingdom_Hearts_OST_Menu_Theme_1.wav"); back2.setVolume(100);
-    back3.loadFromFile("yt1s.com_-_Kingdom_Hearts_OST_Menu_Theme_2.wav"); back3.setVolume(100);
-    mainMenu11.loadFromFile("game.wav");                         mainMenu11.setVolume(80);
-    lost.loadFromFile("lost.wav");                               lost.setVolume(50);
+    eat.loadFromFile("coineat.mp3");                              eat.setVolume(5);
+    ost.loadFromFile("Medieval_Music_-_Haunted_Ferryman.mp3");   ost.setVolume(50);
+    telep.loadFromFile("TELEP.mp3");                             telep.setVolume(50);
+    fireBall.loadFromFile("fireball.mp3");                       fireBall.setVolume(70);
+    drink.loadFromFile("drink.mp3");                             drink.setVolume(100);
+    spiderS.loadFromFile("spider.mp3");                          spiderS.setVolume(100);
+    voice1.loadFromFile("First.mp3");                            voice1.setVolume(100);
+    voice2.loadFromFile("Second_1.mp3");                         voice2.setVolume(100);
+    voice3.loadFromFile("Third.mp3");                            voice3.setVolume(100);
+    back1.loadFromFile("yt1s.com_-_Kingdom_Hearts_OST_Menu_Theme.mp3");   back1.setVolume(100);
+    back2.loadFromFile("yt1s.com_-_Kingdom_Hearts_OST_Menu_Theme_1.mp3"); back2.setVolume(100);
+    back3.loadFromFile("yt1s.com_-_Kingdom_Hearts_OST_Menu_Theme_2.mp3"); back3.setVolume(100);
+    mainMenu11.loadFromFile("game.mp3");                         mainMenu11.setVolume(80);
+    lost.loadFromFile("lost.mp3");                               lost.setVolume(50);
 
     // HUD
     heart.setTexture(assets.texture("heart.png")); heart.setPosition(1050, 10); heart.setScale(0.2, 0.2);
@@ -95,10 +99,24 @@ int Game::run() {
 
     setup();
 
-    PlayContext ctx{ player, score, level, ending, eat, telep, drink, spiderS, fireBall, ost, assets };
-
+#ifdef __EMSCRIPTEN__
+    // The browser owns the loop; call tick() at 30 fps and never return.
+    emscripten_set_main_loop_arg(
+        [](void* self) { static_cast<Game*>(self)->tick(); }, this, 30, 1);
+#else
     while (window.isOpen()) {
-        Level* current = (level == 1) ? static_cast<Level*>(&level1) : static_cast<Level*>(&level2);
+        tick();
+    }
+    CloseAudioDevice();
+    CloseWindow();
+#endif
+    return 0;
+}
+
+void Game::tick() {
+    Level* current = (level == 1) ? static_cast<Level*>(&level1) : static_cast<Level*>(&level2);
+    PlayContext ctx{ player, score, level, ending, eat, telep, drink, spiderS, fireBall, ost, assets };
+    {
 
         // Alias the player's fields so the input logic reads like the original.
         Sprite& skeleton = player.sprite;
@@ -314,8 +332,4 @@ int Game::run() {
         window.draw(cursor);
         window.display();
     }
-
-    CloseAudioDevice();
-    CloseWindow();
-    return 0;
 }

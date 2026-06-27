@@ -30,7 +30,7 @@ target_link_libraries(dungeon PRIVATE raylib)
 # ---- web (Emscripten) build target ----
 # Configure with: emcmake cmake -B build-web && cmake --build build-web
 if(EMSCRIPTEN)
-    set_target_properties(dungeon PROPERTIES SUFFIX ".html")
+    set_target_properties(dungeon PROPERTIES OUTPUT_NAME "index" SUFFIX ".html")
     target_link_options(dungeon PRIVATE
         --preload-file ${CMAKE_SOURCE_DIR}/assets@assets
         -sUSE_GLFW=3

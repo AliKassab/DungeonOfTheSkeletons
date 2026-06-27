@@ -18,6 +18,7 @@ public:
 
 private:
     void setup();
+    void tick();    // one iteration of the game loop (driven by the browser on web)
 
     Window window;
     AssetManager assets;
