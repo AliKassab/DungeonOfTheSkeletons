@@ -35,7 +35,11 @@ if(EMSCRIPTEN)
         --preload-file ${CMAKE_SOURCE_DIR}/assets@assets
         -sUSE_GLFW=3
         -sASYNCIFY
-        -sTOTAL_MEMORY=134217728
+        -sTOTAL_MEMORY=268435456
+        -sSTACK_SIZE=4MB
+        # raylib's GLFW JS shim reads the HEAP views directly; recent Emscripten no
+        # longer exports them by default, so request them explicitly.
+        -sEXPORTED_RUNTIME_METHODS=ccall,cwrap,HEAPF32,HEAP32,HEAPU8,HEAPU32,HEAPF64
         --shell-file ${CMAKE_SOURCE_DIR}/shell/shell.html
     )
 endif()

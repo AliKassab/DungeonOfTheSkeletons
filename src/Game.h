@@ -27,7 +27,7 @@ private:
     Level2 level2;
 
     // --- menu / HUD / story sprites ---
-    Sprite cursor, black, red, heart, frame, bar, lose, win;
+    Sprite black, red, heart, frame, bar, lose, win;
     Sprite storyImg[28];
 
     // --- text ---

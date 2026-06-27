@@ -20,8 +20,6 @@ const char* kStoryFiles[28] = {
 }
 
 void Game::setup() {
-    cursor.setTexture(assets.texture("cur.png"));
-
     black.setTexture(assets.texture("Black.png")); black.setScale(0.75, 0.65);
     red.setTexture(assets.texture("Red.png"));     red.setScale(0.75, 0.65);
 
@@ -95,14 +93,16 @@ void Game::setup() {
 int Game::run() {
     window.create(1280, 720, "Dungeon of the skeletons");
     window.setFramerateLimit(30);
-    window.setMouseCursorVisible(false);
+    // Use the native OS cursor (the browser draws it, so it tracks reliably on web);
+    // the old in-game cur.png sprite is no longer drawn.
 
     setup();
 
 #ifdef __EMSCRIPTEN__
-    // The browser owns the loop; call tick() at 30 fps and never return.
+    // The browser owns the loop. Use requestAnimationFrame (fps arg 0) so mouse/key
+    // events sync correctly; tick() throttles game logic to 30 Hz internally.
     emscripten_set_main_loop_arg(
-        [](void* self) { static_cast<Game*>(self)->tick(); }, this, 30, 1);
+        [](void* self) { static_cast<Game*>(self)->tick(); }, this, 0, 1);
 #else
     while (window.isOpen()) {
         tick();
@@ -114,6 +114,12 @@ int Game::run() {
 }
 
 void Game::tick() {
+    // Keep the original fixed 30 Hz step regardless of how fast the browser calls us.
+    static double lastStep = 0.0;
+    double now = GetTime();
+    if (now - lastStep < 1.0 / 30.0) return;
+    lastStep = now;
+
     Level* current = (level == 1) ? static_cast<Level*>(&level1) : static_cast<Level*>(&level2);
     PlayContext ctx{ player, score, level, ending, eat, telep, drink, spiderS, fireBall, ost, assets };
     {
@@ -209,9 +215,6 @@ void Game::tick() {
             ost.play();
             ost.setLoop(true);
         }
-
-        Mouse::Vec mpos = Mouse::getPosition();
-        cursor.setPosition(mpos.x, mpos.y);
 
         // ---- render ----
         window.clear();
@@ -329,7 +332,6 @@ void Game::tick() {
         if (die) { window.draw(lose); skeleton.move(0, -8); }
         if (ending == true) { window.draw(win); }
 
-        window.draw(cursor);
         window.display();
     }
 }
