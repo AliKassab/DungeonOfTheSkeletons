@@ -48,6 +48,10 @@ cmake_install.cmake
 # macOS
 .DS_Store
 
+# Editor / tooling config (local only)
+.claude/
+.vscode/
+
 # Original Windows/SFML source kept only as a porting reference
 /_original_Main_Game.cpp
 
