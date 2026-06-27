@@ -1,24 +1,12 @@
 # Dungeon of the Skeletons
 
 A 2D dungeon platformer written in **C++**. Run, jump, and crouch your way through
-skeleton-infested levels — dodging spikes, archers, wizards and spiders, collecting coins
+skeleton-infested levels, dodging spikes, archers, wizards and spiders, collecting coins
 and keys, and travelling between rooms through portals.
 
 ### ▶ [Play it in your browser](https://alikassab.dev/DungeonOfTheSkeletons/)
 
-No install, no download — it runs as WebAssembly. (First load pulls a ~22 MB asset bundle.)
-
 ---
-
-## Controls
-
-| Key | Action |
-|-----|--------|
-| ← / → | Move left / right |
-| ↑ | Jump |
-| ↓ | Crouch |
-| Mouse | Menu navigation (click Start / Controls / Exit) |
-| Space | Advance the intro story / start playing |
 
 ## What this project demonstrates
 
@@ -39,7 +27,7 @@ Visual Studio and Windows-only headers. This repo is the port and rewrite:
 ## Architecture
 
 ```
-main.cpp             entry point — constructs and runs Game
+main.cpp             entry point . constructs and runs Game
 Game.{h,cpp}         window, asset ownership, state machine (menu → story → play → win/lose)
 AssetManager.h       loads & caches textures / fonts / sounds by filename (dedupes)
 Entity.h             base actor: wraps a Sprite, forwards position / bounds / move / draw
@@ -88,8 +76,3 @@ assets/   all game media (images, audio, fonts) + Highscore.txt
 src/      game source (+ src/compat/ for the raylib bridge)
 shell/    HTML shell used by the web build
 ```
-
-## Credits
-
-Originally built as an SFML game; art, audio and level design are retained from the original.
-Ported to raylib and refactored to OOP for cross-platform and web play.
