@@ -1,43 +1,251 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dungeon of the Skeletons</title>
+  <meta name="description"
+    content="Dungeon of the Skeletons — a 2D dungeon platformer in C++ / raylib, playable in the browser. By Ali Kassab." />
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0a05'/%3E%3Ctext x='16' y='22' font-family='Georgia,serif' font-size='15' font-weight='700' fill='%23c8a060' text-anchor='middle'%3EAK%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+    rel="stylesheet" />
   <style>
-    html, body { margin: 0; height: 100%; }
+    /* ── Dark wood-board background (matches the portfolio) ── */
+    html, body { margin: 0; min-height: 100%; }
     body {
-      background: #0b0b12; color: #cfcfe6;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background-color: #0e0a05;
+      background-image:
+        repeating-linear-gradient(92deg,
+          transparent 0px, transparent 38px,
+          rgba(255, 230, 160, 0.018) 38px, rgba(255, 230, 160, 0.018) 40px,
+          transparent 40px, transparent 80px,
+          rgba(0, 0, 0, 0.06) 80px, rgba(0, 0, 0, 0.06) 82px),
+        radial-gradient(ellipse 120% 50% at 50% 0%, rgba(52, 34, 12, 0.75), transparent 60%),
+        radial-gradient(ellipse 80% 60% at 0% 100%, rgba(8, 5, 2, 0.55), transparent 55%),
+        radial-gradient(ellipse 80% 60% at 100% 100%, rgba(8, 5, 2, 0.55), transparent 55%);
+      color: #c8b080;
+      font-family: 'EB Garamond', serif;
+      line-height: 1.7;
+      min-height: 100vh;
       display: flex; flex-direction: column; align-items: center;
-      justify-content: flex-start; min-height: 100vh;
+      padding: 0 1rem 3rem;
+      box-sizing: border-box;
     }
-    h1 { font-weight: 600; margin: 20px 0 4px; letter-spacing: .5px; }
-    p  { margin: 0 0 14px; opacity: .65; font-size: 14px; }
+
+    /* Fine noise over the whole board */
+    body::after {
+      content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      opacity: 0.09; mix-blend-mode: soft-light;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    main { position: relative; z-index: 1; width: 100%; max-width: 1180px; }
+
+    /* ── Top bar ── */
+    nav {
+      width: 100%; display: flex; justify-content: space-between; align-items: center;
+      padding: 1.1rem 0.25rem 1.6rem;
+    }
+    .brand {
+      font-family: 'Cinzel Decorative', serif; font-weight: 700; letter-spacing: 0.04em;
+      font-size: 1.15rem; color: #c8a060; text-decoration: none;
+    }
+    .nav-link {
+      font-family: 'EB Garamond', serif; text-transform: uppercase; letter-spacing: 0.28em;
+      font-size: 0.66rem; font-weight: 600; color: #7a6438; text-decoration: none;
+      transition: color 0.25s ease;
+    }
+    .nav-link:hover { color: #c8a060; }
+
+    /* ── Title block ── */
+    header { text-align: center; margin-bottom: 1.5rem; }
+    .blackletter {
+      font-family: 'Cinzel', serif; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase; color: #c8b080;
+      font-size: clamp(1.7rem, 4.5vw, 3rem); margin: 0;
+    }
+    .label {
+      font-family: 'EB Garamond', serif; text-transform: uppercase; letter-spacing: 0.34em;
+      font-weight: 600; font-size: 0.68rem; color: #7a6438;
+    }
+    .ornament { display: flex; align-items: center; gap: 0.8rem; max-width: 20rem; margin: 0.9rem auto; }
+    .ornament::before, .ornament::after {
+      content: ""; height: 1px; flex: 1;
+      background: linear-gradient(90deg, transparent, rgba(160, 124, 44, 0.4), transparent);
+    }
+    .ornament span { color: #9a7c32; }
+
+    /* ── Game screen: black canvas mounted in a wood/gold frame on the board ── */
+    .screen {
+      position: relative; margin: 0 auto; width: min(96vw, 1120px);
+      padding: 14px; background:
+        linear-gradient(168deg, #2a1d0c, #1a1206 60%, #120c05);
+      border: 1px solid rgba(20, 12, 4, 0.8);
+      box-shadow:
+        0 1px 0 rgba(200, 160, 96, 0.18) inset,
+        4px 8px 24px rgba(0, 0, 0, 0.6),
+        8px 16px 60px rgba(0, 0, 0, 0.45);
+    }
+    /* inner gold ruling line */
+    .screen::before {
+      content: ""; position: absolute; inset: 7px;
+      border: 1px solid rgba(160, 124, 44, 0.35); pointer-events: none; z-index: 3;
+    }
+    /* corner crosses */
+    .frame-corner {
+      position: absolute; font-size: 0.9rem; color: rgba(160, 124, 44, 0.6);
+      line-height: 1; z-index: 4;
+    }
+    .frame-corner.tl { top: 10px; left: 12px; }
+    .frame-corner.tr { top: 10px; right: 12px; }
+    .frame-corner.bl { bottom: 10px; left: 12px; }
+    .frame-corner.br { bottom: 10px; right: 12px; }
+    /* nails */
+    .nail {
+      position: absolute; width: 11px; height: 11px; border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #b89060, #4c3018 70%);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(20, 10, 4, 0.7); z-index: 4;
+    }
+    .nail.tl { top: -5px; left: 26px; }
+    .nail.tr { top: -5px; right: 26px; }
+    .nail.bl { bottom: -5px; left: 26px; }
+    .nail.br { bottom: -5px; right: 26px; }
+
+    .canvas-wrap { position: relative; background: #000; }
     #canvas {
-      background: #000; border: 1px solid #2a2a3a; border-radius: 4px;
-      max-width: 100%; image-rendering: pixelated; outline: none;
+      display: block; width: min(96vw - 28px, 1092px); height: auto; aspect-ratio: 16 / 9;
+      background: #000; image-rendering: pixelated; outline: none;
     }
-    #status { margin-top: 10px; min-height: 18px; opacity: .6; font-size: 13px; }
+
+    /* ── Loading overlay (parchment notice over the screen) ── */
+    #loading {
+      position: absolute; inset: 0; z-index: 5; display: flex;
+      flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.06'/%3E%3C/svg%3E"),
+        linear-gradient(168deg, #f0e4c0 0%, #e4d0a0 45%, #d8c090 100%);
+      color: #1e1408; transition: opacity 0.4s ease;
+    }
+    #loading.hidden { opacity: 0; pointer-events: none; }
+    #loading .title {
+      font-family: 'Cinzel', serif; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: #7a2818; font-size: 1.05rem;
+    }
+    #status {
+      font-family: 'Cormorant Garamond', serif; font-style: italic;
+      font-size: 1.15rem; color: #5c4420; min-height: 1.4em;
+    }
+    .bar { width: 220px; height: 6px; border: 1px solid rgba(20, 12, 4, 0.4); background: rgba(20,12,4,0.06); }
+    .bar > i { display: block; height: 100%; width: 0%; background: #7a2818; transition: width 0.2s ease; }
+
+    /* ── Controls ribbon (parchment) ── */
+    .controls {
+      max-width: 760px; margin: 1.4rem auto 0; padding: 0.85rem 1.4rem; text-align: center;
+      background: linear-gradient(168deg, #f0e4c0 0%, #e4d0a0 45%, #d8c090 100%);
+      border: 1px solid rgba(20, 12, 4, 0.5); color: #1e1408;
+      box-shadow: 3px 6px 18px rgba(0, 0, 0, 0.5);
+      font-size: 0.98rem;
+    }
+    .controls b { color: #7a2818; }
+    .controls .key {
+      font-family: 'EB Garamond', serif; font-weight: 600; color: #3c2c14;
+    }
+    .dot { color: #8a6e28; margin: 0 0.5rem; }
+
+    footer {
+      position: relative; z-index: 1; margin-top: 2rem; text-align: center;
+      font-family: 'EB Garamond', serif; font-style: italic; color: #6b5738; font-size: 0.85rem;
+    }
+    footer a { color: #8a6e28; text-decoration: none; }
+    footer a:hover { color: #c8a060; }
   </style>
 </head>
+
 <body>
-  <h1>Dungeon of the Skeletons</h1>
-  <p>Click the game, then: <b>Start</b> → <b>Space</b> &nbsp;·&nbsp; ← → move &nbsp;·&nbsp; ↑ jump &nbsp;·&nbsp; ↓ crouch</p>
-  <canvas id="canvas" width="1280" height="720" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
-  <div id="status">Loading…</div>
+  <main>
+    <nav>
+      <a class="brand" href="https://alikassab.dev/">Ali Kassab</a>
+      <a class="nav-link" href="https://alikassab.dev/#labs">&#8592;&nbsp;&nbsp;Back to Portfolio</a>
+    </nav>
+
+    <header>
+      <p class="label" style="margin:0 0 0.5rem">Personal Labs</p>
+      <h1 class="blackletter">Dungeon of the Skeletons</h1>
+      <div class="ornament"><span aria-hidden="true">&#10087;</span></div>
+      <p class="label" style="color:#7a6438">C++ &middot; raylib &middot; WebAssembly</p>
+    </header>
+
+    <div class="screen">
+      <span class="nail tl"></span><span class="nail tr"></span>
+      <span class="nail bl"></span><span class="nail br"></span>
+      <span class="frame-corner tl" aria-hidden="true">&#10010;</span>
+      <span class="frame-corner tr" aria-hidden="true">&#10010;</span>
+      <span class="frame-corner bl" aria-hidden="true">&#10010;</span>
+      <span class="frame-corner br" aria-hidden="true">&#10010;</span>
+
+      <div class="canvas-wrap">
+        <canvas id="canvas" width="1280" height="720" tabindex="-1"
+          oncontextmenu="event.preventDefault()"></canvas>
+        <div id="loading">
+          <p class="title">Unsealing the Dungeon</p>
+          <div id="status">Loading&hellip;</div>
+          <div class="bar"><i id="bar"></i></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="controls">
+      Click the game, then <b>Start</b> &rarr; <b>Space</b>
+      <span class="dot" aria-hidden="true">&#10022;</span>
+      <span class="key">&larr; &rarr;</span> move
+      <span class="dot" aria-hidden="true">&#10022;</span>
+      <span class="key">&uarr;</span> jump
+      <span class="dot" aria-hidden="true">&#10022;</span>
+      <span class="key">&darr;</span> crouch
+    </p>
+  </main>
+
+  <footer>
+    Built by <a href="https://alikassab.dev/">Ali Kassab</a> &middot;
+    <a href="https://github.com/AliKassab/DungeonOfTheSkeletons">Source on GitHub</a>
+  </footer>
+
   <script>
     var statusEl = document.getElementById('status');
+    var barEl = document.getElementById('bar');
+    var loadingEl = document.getElementById('loading');
+
+    function setStatus(text) {
+      if (!statusEl) return;
+      // Emscripten reports progress as "... (123/456)"; show a bar when it does.
+      var m = text && text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+      if (m) {
+        statusEl.textContent = m[1].trim() || 'Loading…';
+        barEl.style.width = (100 * parseFloat(m[2]) / parseFloat(m[4])) + '%';
+      } else {
+        statusEl.textContent = text || '';
+        if (!text) { barEl.style.width = '100%'; loadingEl.classList.add('hidden'); }
+      }
+    }
+
     var Module = {
       canvas: document.getElementById('canvas'),
       print:    function (t) { console.log(t); },
       printErr: function (t) { console.error(t); },
-      setStatus: function (t) { if (statusEl) statusEl.textContent = t; },
-      monitorRunDependencies: function () {}
+      setStatus: setStatus,
+      monitorRunDependencies: function (left) {
+        if (left === 0) setTimeout(function () { setStatus(''); }, 200);
+      }
     };
     Module.setStatus('Loading…');
-    window.onerror = function () { Module.setStatus('Something went wrong — see the console.'); };
+    window.onerror = function () { setStatus('Something went wrong — see the console.'); };
   </script>
   {{{ SCRIPT }}}
 </body>
+
 </html>
